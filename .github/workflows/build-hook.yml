@@ -1,1 +1,39 @@
+name: Build URL Redirect Hook
 
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-dylib:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+        
+    - name: Compile dylib
+      run: |
+        clang -dynamiclib \
+          -framework Foundation \
+          -o libURLHook.dylib \
+          URLHook.m
+        
+    - name: Verify dylib
+      run: |
+        file libURLHook.dylib
+        otool -L libURLHook.dylib
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: URLHook-dylib
+        path: libURLHook.dylib
+        retention-days: 30
